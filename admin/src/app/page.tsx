@@ -96,7 +96,7 @@ export default function DashboardPage() {
               icon={DollarSign}
               iconBg="#5C8D4D"
               label="Daily Revenue"
-              value="$2,450.00"
+              value="₱2,450.00"
               change={12.5}
             />
             <StatsCard
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-3 text-sm text-[var(--text-muted)]">{item.category}</td>
                         <td className="py-3 text-sm text-right">{item.qtySold}</td>
-                        <td className="py-3 text-sm text-right font-medium">${item.revenue.toFixed(2)}</td>
+                        <td className="py-3 text-sm text-right font-medium">₱{item.revenue.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>

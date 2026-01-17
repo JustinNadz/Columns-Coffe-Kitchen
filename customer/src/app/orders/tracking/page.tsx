@@ -188,8 +188,8 @@ export default function OrderTrackingPage() {
                                 >
                                     <div
                                         className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all ${isCompleted || isCurrent
-                                                ? 'bg-[var(--primary)] text-white'
-                                                : 'bg-[var(--background-alt)] text-[var(--text-muted)] border-2 border-[var(--border)]'
+                                            ? 'bg-[var(--primary)] text-white'
+                                            : 'bg-[var(--background-alt)] text-[var(--text-muted)] border-2 border-[var(--border)]'
                                             }`}
                                     >
                                         {isCompleted ? (
@@ -225,7 +225,7 @@ export default function OrderTrackingPage() {
                                 <span>
                                     {item.quantity}x {item.name}
                                 </span>
-                                <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="font-medium">₱{(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
                     </div>
@@ -233,7 +233,7 @@ export default function OrderTrackingPage() {
                     <div className="border-t border-[var(--border)] pt-4">
                         <div className="flex justify-between font-semibold">
                             <span>Total</span>
-                            <span>${order.total.toFixed(2)}</span>
+                            <span>₱{order.total.toFixed(2)}</span>
                         </div>
                     </div>
                 </motion.div>

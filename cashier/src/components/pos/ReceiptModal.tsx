@@ -112,7 +112,7 @@ export default function ReceiptModal({ isOpen, onClose, order }: ReceiptModalPro
                                             <div key={index}>
                                                 <div className="flex justify-between">
                                                     <span>{item.quantity}x {item.name}</span>
-                                                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                                    <span>₱{(item.price * item.quantity).toFixed(2)}</span>
                                                 </div>
                                                 {item.notes && (
                                                     <p className="text-[var(--text-muted)] pl-4">→ {item.notes}</p>
@@ -127,21 +127,21 @@ export default function ReceiptModal({ isOpen, onClose, order }: ReceiptModalPro
                                     <div className="space-y-1">
                                         <div className="flex justify-between">
                                             <span>Subtotal:</span>
-                                            <span>${order.subtotal.toFixed(2)}</span>
+                                            <span>₱{order.subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span>Tax (8%):</span>
-                                            <span>${order.tax.toFixed(2)}</span>
+                                            <span>VAT (12%):</span>
+                                            <span>₱{order.tax.toFixed(2)}</span>
                                         </div>
                                         {order.discount > 0 && (
                                             <div className="flex justify-between text-[var(--primary)]">
                                                 <span>Discount:</span>
-                                                <span>-${order.discount.toFixed(2)}</span>
+                                                <span>-₱{order.discount.toFixed(2)}</span>
                                             </div>
                                         )}
                                         <div className="flex justify-between font-bold text-sm pt-1 border-t border-[var(--border)]">
                                             <span>TOTAL:</span>
-                                            <span>${order.total.toFixed(2)}</span>
+                                            <span>₱{order.total.toFixed(2)}</span>
                                         </div>
                                     </div>
 

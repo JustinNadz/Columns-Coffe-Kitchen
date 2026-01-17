@@ -84,14 +84,14 @@ Generated: ${new Date().toLocaleString()}
 
 SUMMARY
 -------
-Total Revenue: $${report.revenue.toLocaleString()}
+Total Revenue: ₱${report.revenue.toLocaleString()}
 Total Orders: ${report.orders}
-Average Order Value: $${report.avgOrderValue.toFixed(2)}
+Average Order Value: ₱${report.avgOrderValue.toFixed(2)}
 Peak Hours: ${report.hourlyPeak}
 
 TOP SELLING ITEMS
 -----------------
-${report.topItems.map(item => `${item.name}: ${item.quantity} sold ($${item.revenue.toFixed(2)})`).join('\n')}
+${report.topItems.map(item => `${item.name}: ${item.quantity} sold (₱${item.revenue.toFixed(2)})`).join('\n')}
       `;
 
             const blob = new Blob([content], { type: 'text/plain' });
@@ -173,7 +173,7 @@ ${report.topItems.map(item => `${item.name}: ${item.quantity} sold ($${item.reve
                                 </div>
                                 <span className="text-sm text-[var(--text-muted)]">Total Revenue</span>
                             </div>
-                            <p className="text-2xl font-bold">${report.revenue.toLocaleString()}</p>
+                            <p className="text-2xl font-bold">₱{report.revenue.toLocaleString()}</p>
                             <div className={`flex items-center gap-1 text-sm mt-1 ${parseFloat(revenueChange) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                                 <TrendingUp className="w-4 h-4" />
                                 <span>{revenueChange}% vs previous</span>
@@ -207,7 +207,7 @@ ${report.topItems.map(item => `${item.name}: ${item.quantity} sold ($${item.reve
                                 </div>
                                 <span className="text-sm text-[var(--text-muted)]">Avg Order Value</span>
                             </div>
-                            <p className="text-2xl font-bold">${report.avgOrderValue.toFixed(2)}</p>
+                            <p className="text-2xl font-bold">₱{report.avgOrderValue.toFixed(2)}</p>
                         </motion.div>
 
                         <motion.div
@@ -246,7 +246,7 @@ ${report.topItems.map(item => `${item.name}: ${item.quantity} sold ($${item.reve
                                             <p className="font-medium">{item.name}</p>
                                             <p className="text-sm text-[var(--text-muted)]">{item.quantity} sold</p>
                                         </div>
-                                        <span className="font-semibold text-[var(--primary)]">${item.revenue.toFixed(2)}</span>
+                                        <span className="font-semibold text-[var(--primary)]">₱{item.revenue.toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -263,19 +263,19 @@ ${report.topItems.map(item => `${item.name}: ${item.quantity} sold ($${item.reve
                             <div className="space-y-4">
                                 <div className="flex justify-between p-3 bg-[var(--background-alt)] rounded-lg">
                                     <span className="text-[var(--text-muted)]">Gross Revenue</span>
-                                    <span className="font-semibold">${report.revenue.toFixed(2)}</span>
+                                    <span className="font-semibold">₱{report.revenue.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between p-3 bg-[var(--background-alt)] rounded-lg">
                                     <span className="text-[var(--text-muted)]">Est. COGS (35%)</span>
-                                    <span className="font-semibold text-red-500">-${(report.revenue * 0.35).toFixed(2)}</span>
+                                    <span className="font-semibold text-red-500">-₱{(report.revenue * 0.35).toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between p-3 bg-[var(--background-alt)] rounded-lg">
                                     <span className="text-[var(--text-muted)]">Est. Labor (25%)</span>
-                                    <span className="font-semibold text-red-500">-${(report.revenue * 0.25).toFixed(2)}</span>
+                                    <span className="font-semibold text-red-500">-₱{(report.revenue * 0.25).toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                                     <span className="font-medium text-green-700">Est. Profit (40%)</span>
-                                    <span className="font-bold text-green-700">${(report.revenue * 0.40).toFixed(2)}</span>
+                                    <span className="font-bold text-green-700">₱{(report.revenue * 0.40).toFixed(2)}</span>
                                 </div>
                             </div>
                         </motion.div>

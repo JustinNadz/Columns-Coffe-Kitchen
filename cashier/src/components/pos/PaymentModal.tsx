@@ -102,7 +102,7 @@ export default function PaymentModal({ isOpen, onClose, onComplete, total }: Pay
                             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--background-alt)]">
                                 <div>
                                     <h2 className="text-lg font-semibold">Payment</h2>
-                                    <p className="text-2xl font-bold text-[var(--primary)]">${total.toFixed(2)}</p>
+                                    <p className="text-2xl font-bold text-[var(--primary)]">₱{total.toFixed(2)}</p>
                                 </div>
                                 <button
                                     onClick={onClose}
@@ -219,7 +219,7 @@ export default function PaymentModal({ isOpen, onClose, onComplete, total }: Pay
                                                     />
                                                 ) : (
                                                     <>
-                                                        Pay ${total.toFixed(2)}
+                                                        Pay ₱{total.toFixed(2)}
                                                         <ArrowRight className="w-4 h-4" />
                                                     </>
                                                 )}
@@ -252,7 +252,7 @@ export default function PaymentModal({ isOpen, onClose, onComplete, total }: Pay
                                                         onClick={() => setCashAmount(amount.toString())}
                                                         className="flex-1 btn btn-outline"
                                                     >
-                                                        ${amount}
+                                                        ₱{amount}
                                                     </button>
                                                 ))}
                                                 <button
@@ -270,7 +270,7 @@ export default function PaymentModal({ isOpen, onClose, onComplete, total }: Pay
                                                     className="p-4 bg-green-50 rounded-xl text-center"
                                                 >
                                                     <p className="text-sm text-green-600">Change Due</p>
-                                                    <p className="text-3xl font-bold text-green-700">${change.toFixed(2)}</p>
+                                                    <p className="text-3xl font-bold text-green-700">₱{change.toFixed(2)}</p>
                                                 </motion.div>
                                             )}
 
@@ -308,7 +308,7 @@ export default function PaymentModal({ isOpen, onClose, onComplete, total }: Pay
                                             {parseFloat(cashAmount) > 0 && parseFloat(cashAmount) < total && (
                                                 <div className="p-4 bg-blue-50 rounded-xl">
                                                     <p className="text-sm text-blue-600">Remaining on Card</p>
-                                                    <p className="text-2xl font-bold text-blue-700">${splitRemaining.toFixed(2)}</p>
+                                                    <p className="text-2xl font-bold text-blue-700">₱{splitRemaining.toFixed(2)}</p>
                                                 </div>
                                             )}
 

@@ -25,7 +25,7 @@ interface Notification {
 const mockNotifications: Notification[] = [
     { id: '1', type: 'order', title: 'New Order #2048', message: 'Oat Latte, Avocado Toast', time: new Date(Date.now() - 1000 * 60 * 2), read: false },
     { id: '2', type: 'stock', title: 'Low Stock Alert', message: 'Almond Milk running low (5 units)', time: new Date(Date.now() - 1000 * 60 * 15), read: false },
-    { id: '3', type: 'revenue', title: 'Daily Goal Reached!', message: 'You\'ve hit $2,000 in sales today', time: new Date(Date.now() - 1000 * 60 * 45), read: false },
+    { id: '3', type: 'revenue', title: 'Daily Goal Reached!', message: 'You\'ve hit ₱2,000 in sales today', time: new Date(Date.now() - 1000 * 60 * 45), read: false },
     { id: '4', type: 'order', title: 'New Order #2047', message: 'Espresso, Butter Croissant x2', time: new Date(Date.now() - 1000 * 60 * 60), read: true },
     { id: '5', type: 'alert', title: 'Shift Reminder', message: 'Sarah\'s shift ends in 30 minutes', time: new Date(Date.now() - 1000 * 60 * 90), read: true },
 ];

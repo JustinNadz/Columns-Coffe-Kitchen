@@ -77,8 +77,8 @@ export default function DiscountModal({ isOpen, onClose, onApply, subtotal }: Di
                                     <button
                                         onClick={() => setDiscountType('percentage')}
                                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-colors ${discountType === 'percentage'
-                                                ? 'bg-[var(--primary)] text-white'
-                                                : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
+                                            ? 'bg-[var(--primary)] text-white'
+                                            : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
                                             }`}
                                     >
                                         <Percent className="w-4 h-4" />
@@ -87,8 +87,8 @@ export default function DiscountModal({ isOpen, onClose, onApply, subtotal }: Di
                                     <button
                                         onClick={() => setDiscountType('fixed')}
                                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-colors ${discountType === 'fixed'
-                                                ? 'bg-[var(--primary)] text-white'
-                                                : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
+                                            ? 'bg-[var(--primary)] text-white'
+                                            : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
                                             }`}
                                     >
                                         <DollarSign className="w-4 h-4" />
@@ -105,11 +105,11 @@ export default function DiscountModal({ isOpen, onClose, onApply, subtotal }: Di
                                                 key={value}
                                                 onClick={() => handlePreset(value)}
                                                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${amount === value.toString()
-                                                        ? 'bg-[var(--primary)] text-white'
-                                                        : 'bg-[var(--background-alt)] hover:bg-[var(--border)]'
+                                                    ? 'bg-[var(--primary)] text-white'
+                                                    : 'bg-[var(--background-alt)] hover:bg-[var(--border)]'
                                                     }`}
                                             >
-                                                {discountType === 'percentage' ? `${value}%` : `$${value}`}
+                                                {discountType === 'percentage' ? `${value}%` : `₱${value}`}
                                             </button>
                                         ))}
                                     </div>
@@ -120,7 +120,7 @@ export default function DiscountModal({ isOpen, onClose, onApply, subtotal }: Di
                                     <p className="text-sm text-[var(--text-muted)] mb-2">Custom amount</p>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
-                                            {discountType === 'percentage' ? '%' : '$'}
+                                            {discountType === 'percentage' ? '%' : '₱'}
                                         </span>
                                         <input
                                             type="number"
@@ -139,15 +139,15 @@ export default function DiscountModal({ isOpen, onClose, onApply, subtotal }: Di
                                     <div className="mb-6 p-4 bg-[var(--background-alt)] rounded-xl">
                                         <div className="flex justify-between text-sm mb-2">
                                             <span className="text-[var(--text-muted)]">Subtotal</span>
-                                            <span>${subtotal.toFixed(2)}</span>
+                                            <span>₱{subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-[var(--primary)]">
                                             <span>Discount</span>
-                                            <span>-${calculateDiscount().toFixed(2)}</span>
+                                            <span>-₱{calculateDiscount().toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-[var(--border)]">
                                             <span>New Total</span>
-                                            <span>${(subtotal - calculateDiscount()).toFixed(2)}</span>
+                                            <span>₱{(subtotal - calculateDiscount()).toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}

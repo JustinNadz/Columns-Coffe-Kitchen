@@ -129,8 +129,8 @@ export default function OrderHistoryPage() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${order.status === 'completed'
-                                                    ? 'bg-green-100 text-green-600'
-                                                    : 'bg-red-100 text-red-600'
+                                                ? 'bg-green-100 text-green-600'
+                                                : 'bg-red-100 text-red-600'
                                                 }`}>
                                                 {order.status === 'completed' ? (
                                                     <CheckCircle className="w-4 h-4" />
@@ -143,7 +143,7 @@ export default function OrderHistoryPage() {
                                                 <p className="text-xs text-[var(--text-muted)]">{formatDate(order.date)}</p>
                                             </div>
                                         </div>
-                                        <span className="font-semibold">${order.total.toFixed(2)}</span>
+                                        <span className="font-semibold">₱{order.total.toFixed(2)}</span>
                                     </div>
                                 </div>
 

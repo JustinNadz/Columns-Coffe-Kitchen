@@ -2,89 +2,121 @@
 
 import { motion } from 'framer-motion';
 
-interface SkeletonProps {
-    className?: string;
-    style?: React.CSSProperties;
+// Product Card Skeleton
+export function ProductCardSkeleton() {
+    return (
+        <div className="card overflow-hidden animate-pulse">
+            <div className="h-40 bg-gray-200" />
+            <div className="p-4 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-full" />
+            </div>
+        </div>
+    );
 }
 
-export function Skeleton({ className = '', style }: SkeletonProps) {
+// Product Grid Skeleton
+export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: count }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+            ))}
+        </div>
+    );
+}
+
+// Category Tab Skeleton
+export function CategoryTabsSkeleton() {
+    return (
+        <div className="flex gap-2 overflow-x-auto animate-pulse">
+            {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-10 w-24 bg-gray-200 rounded-full flex-shrink-0" />
+            ))}
+        </div>
+    );
+}
+
+// Order Card Skeleton
+export function OrderCardSkeleton() {
+    return (
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-pulse">
+            <div className="p-4 border-b border-gray-100">
+                <div className="flex justify-between mb-2">
+                    <div className="h-5 w-20 bg-gray-200 rounded" />
+                    <div className="h-5 w-16 bg-gray-200 rounded-full" />
+                </div>
+                <div className="flex gap-2">
+                    <div className="h-4 w-16 bg-gray-200 rounded" />
+                    <div className="h-4 w-20 bg-gray-200 rounded" />
+                </div>
+            </div>
+            <div className="p-4 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+            </div>
+            <div className="p-4 bg-gray-50">
+                <div className="h-10 bg-gray-200 rounded-lg" />
+            </div>
+        </div>
+    );
+}
+
+// Dashboard Stats Skeleton
+export function DashboardStatsSkeleton() {
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+            {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl p-4 border border-gray-100">
+                    <div className="h-4 w-20 bg-gray-200 rounded mb-2" />
+                    <div className="h-8 w-16 bg-gray-200 rounded" />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// Table Row Skeleton
+export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
+    return (
+        <tr className="animate-pulse">
+            {Array.from({ length: cols }).map((_, i) => (
+                <td key={i} className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                </td>
+            ))}
+        </tr>
+    );
+}
+
+// Shimmer effect component
+export function Shimmer({ className = '' }: { className?: string }) {
     return (
         <motion.div
-            className={`bg-gray-200 rounded-lg ${className}`}
-            style={style}
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            className={`bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 ${className}`}
+            animate={{
+                backgroundPosition: ['200% 0', '-200% 0'],
+            }}
+            transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'linear',
+            }}
+            style={{ backgroundSize: '200% 100%' }}
         />
     );
 }
 
-export function ProductCardSkeleton() {
+// Page Loading Skeleton
+export function PageLoadingSkeleton() {
     return (
-        <div className="card overflow-hidden">
-            <Skeleton className="h-40 w-full rounded-none" />
-            <div className="p-4 space-y-3">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-10 w-full rounded-full" />
+        <div className="min-h-screen bg-[var(--background)] animate-pulse">
+            <div className="h-32 bg-gray-200" />
+            <div className="max-w-6xl mx-auto p-4 space-y-4">
+                <div className="h-10 bg-gray-200 rounded-lg w-1/3" />
+                <CategoryTabsSkeleton />
+                <ProductGridSkeleton />
             </div>
-        </div>
-    );
-}
-
-export function CategoryCardSkeleton() {
-    return (
-        <Skeleton className="aspect-square rounded-2xl" />
-    );
-}
-
-export function OrderItemSkeleton() {
-    return (
-        <div className="flex gap-3 p-4">
-            <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-            </div>
-        </div>
-    );
-}
-
-export function StatsCardSkeleton() {
-    return (
-        <div className="card p-4">
-            <div className="flex items-start gap-3">
-                <Skeleton className="w-10 h-10 rounded-lg" />
-                <div className="flex-1 space-y-2">
-                    <Skeleton className="h-3 w-16" />
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-3 w-20" />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export function TableRowSkeleton() {
-    return (
-        <div className="flex items-center gap-4 py-3">
-            <Skeleton className="w-8 h-8 rounded-full" />
-            <Skeleton className="h-4 flex-1" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-20" />
-        </div>
-    );
-}
-
-export function ChartSkeleton() {
-    return (
-        <div className="h-64 flex items-end gap-2 p-4">
-            {[40, 65, 45, 80, 55, 70, 60, 75, 50, 85, 65, 70].map((height, i) => (
-                <Skeleton
-                    key={i}
-                    className="flex-1 rounded-t"
-                    style={{ height: `${height}%` }}
-                />
-            ))}
         </div>
     );
 }

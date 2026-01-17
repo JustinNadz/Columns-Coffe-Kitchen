@@ -30,9 +30,9 @@ const tiers = [
 
 const rewards = [
     { id: '1', name: 'Free Coffee', points: 100, icon: Coffee },
-    { id: '2', name: '$5 Off', points: 200, icon: Gift },
+    { id: '2', name: '₱5 Off', points: 200, icon: Gift },
     { id: '3', name: 'Free Pastry', points: 150, icon: Sparkles },
-    { id: '4', name: '$10 Off', points: 350, icon: Gift },
+    { id: '4', name: '₱10 Off', points: 350, icon: Gift },
     { id: '5', name: 'Free Meal', points: 500, icon: Award },
 ];
 
@@ -143,10 +143,10 @@ export default function LoyaltyModal({
                                                 onClick={() => canRedeem && setSelectedReward(reward.id)}
                                                 disabled={!canRedeem}
                                                 className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedReward === reward.id
-                                                        ? 'bg-[var(--primary)] text-white'
-                                                        : canRedeem
-                                                            ? 'bg-[var(--background-alt)] hover:bg-[var(--border)]'
-                                                            : 'bg-gray-100 opacity-50 cursor-not-allowed'
+                                                    ? 'bg-[var(--primary)] text-white'
+                                                    : canRedeem
+                                                        ? 'bg-[var(--background-alt)] hover:bg-[var(--border)]'
+                                                        : 'bg-gray-100 opacity-50 cursor-not-allowed'
                                                     }`}
                                             >
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selectedReward === reward.id ? 'bg-white/20' : 'bg-white'
