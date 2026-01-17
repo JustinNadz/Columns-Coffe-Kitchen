@@ -9,15 +9,19 @@ import {
     Package,
     UtensilsCrossed,
     Users,
-    LogOut
+    LogOut,
+    FileText,
+    Settings
 } from 'lucide-react';
 
 const navItems = [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/analytics', icon: TrendingUp, label: 'Sales Analytics' },
+    { href: '/reports', icon: FileText, label: 'Reports' },
     { href: '/inventory', icon: Package, label: 'Inventory' },
     { href: '/menu', icon: UtensilsCrossed, label: 'Menu Editor' },
-    { href: '/staff', icon: Users, label: 'Staff Schedules' },
+    { href: '/staff', icon: Users, label: 'Staff' },
+    { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 interface AdminSidebarProps {
@@ -54,8 +58,8 @@ export default function AdminSidebar({ currentUser }: AdminSidebarProps) {
                                 <Link
                                     href={item.href}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                                            ? 'bg-[var(--primary)] text-white'
-                                            : 'text-gray-400 hover:bg-white/10 hover:text-white'
+                                        ? 'bg-[var(--primary)] text-white'
+                                        : 'text-gray-400 hover:bg-white/10 hover:text-white'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5" />

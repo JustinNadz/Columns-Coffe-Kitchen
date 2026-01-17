@@ -32,7 +32,7 @@ interface POSState {
     checkout: () => void;
 }
 
-const TAX_RATE = 0.08;
+const TAX_RATE = 0.12; // 12% VAT (Philippines)
 
 export const usePOSStore = create<POSState>((set, get) => ({
     orderNumber: 2045,

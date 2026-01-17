@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Coffee,
   LayoutGrid,
@@ -15,33 +16,96 @@ import {
   StickyNote,
   Percent,
   Trash2,
-  ChevronRight
+  ChevronRight,
+  Keyboard,
+  Package,
+  ChevronLeft
 } from 'lucide-react';
 import { usePOSStore } from '@/store/posStore';
+import DiscountModal from '@/components/pos/DiscountModal';
+import NotesModal from '@/components/pos/NotesModal';
+import ReceiptModal from '@/components/pos/ReceiptModal';
 
-// Mock products data
+// Real menu products from Columns Coffee + Kitchen (PHP prices)
 const products = [
-  { id: '1', name: 'Avocado Toast', description: 'Sourdough, radish, chili', price: 12.00, image: 'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=300', category: 'food', inStock: true },
-  { id: '7', name: 'Oat Latte', description: 'Double shot, Minor Figures', price: 5.50, image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300', category: 'drinks', inStock: true },
-  { id: '2', name: 'Butter Croissant', description: 'House-made, French-style', price: 4.00, image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=300', category: 'food', inStock: true },
-  { id: '3', name: 'Granola Bowl', description: 'Greek yogurt, seasonal fruits', price: 9.50, image: 'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=300', category: 'food', inStock: true },
-  { id: '10', name: 'Iced Matcha', description: 'Ceremonial grade, oat milk', price: 6.00, image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300', category: 'drinks', inStock: true },
-  { id: '8', name: 'Espresso', description: 'Single origin, Ethiopia', price: 3.50, image: 'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300', category: 'drinks', inStock: true },
-  { id: '6', name: 'Blueberry Muffin', description: 'Streusel topping', price: 4.50, image: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=300', category: 'food', inStock: false },
-  { id: '9', name: 'Iced Americano', description: 'Double shot, water, ice', price: 3.75, image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=300', category: 'drinks', inStock: true },
+  // SPECIALTY COFFEE CLASSIC
+  { id: 'espresso', name: 'Espresso', description: 'Single shot 100% Arabica', price: 100, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=300', inStock: true },
+  { id: 'americano', name: 'Americano', description: 'Espresso with hot water', price: 120, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1551030173-122aabc4489c?w=300', inStock: true },
+  { id: 'flat-white', name: 'Flat White', description: 'Espresso with steamed oat milk', price: 170, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=300', inStock: true },
+  { id: 'cappuccino', name: 'Cappuccino', description: 'Espresso, oat milk, foam', price: 180, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300', inStock: true },
+  { id: 'caffe-latte', name: 'Caffe Latte', description: 'Espresso with creamy oat milk', price: 190, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300', inStock: true },
+  { id: 'cafe-mocha', name: 'Café Mocha', description: 'Espresso, chocolate, oat milk', price: 210, category: 'coffee-classic', image: 'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=300', inStock: true },
+
+  // SIGNATURE COFFEE
+  { id: 'spanish-latte', name: 'Spanish Latte', description: 'Espresso, oat milk, oat condensed', price: 210, category: 'signature-coffee', image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300', inStock: true },
+  { id: 'tiramisu-latte', name: 'Tiramisu Latte', description: 'Espresso, dark chocolate, cream', price: 230, category: 'signature-coffee', image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=300', inStock: true },
+  { id: 'caramel-seasalt-latte', name: 'Caramel Seasalt', description: 'Sweet and salty layers', price: 230, category: 'signature-coffee', image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=300', inStock: true },
+  { id: 'cookie-butter-latte', name: 'Cookie Butter', description: 'Cookies in a cup', price: 240, category: 'signature-coffee', image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300', inStock: true },
+
+  // NON-COFFEE
+  { id: 'passion-fruit-tea', name: 'Passion Fruit Tea', description: 'Jasmine tea, passion fruit, chia', price: 190, category: 'non-coffee', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300', inStock: true },
+  { id: 'strawberry-oat', name: 'Strawberry Oat', description: 'Oatmilk, strawberry cold foam', price: 230, category: 'non-coffee', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=300', inStock: true },
+  { id: 'chocolate-oat', name: 'Chocolate Oat', description: 'Oatmilk, dark chocolate', price: 230, category: 'non-coffee', image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300', inStock: true },
+
+  // MATCHA & HOJICHA
+  { id: 'matcha-latte', name: 'Matcha Latte', description: 'Ceremonial Uji matcha, oat milk', price: 210, category: 'matcha-hojicha', image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300', inStock: true },
+  { id: 'strawberry-matcha', name: 'Strawberry Matcha', description: 'Green meets red berry heaven', price: 250, category: 'matcha-hojicha', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=300', inStock: true },
+  { id: 'hojicha-latte', name: 'Hojicha Latte', description: 'Roasted, charming hojicha', price: 210, category: 'matcha-hojicha', image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=300', inStock: true },
+
+  // SMOOTHIES
+  { id: 'mango-mania', name: 'Mango Mania', description: 'Mango, banana, plant-milk', price: 230, category: 'smoothies', image: 'https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=300', inStock: true },
+  { id: 'blue-planet', name: 'Blue Planet', description: 'Mango, blue spirulina, ginger', price: 250, category: 'smoothies', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=300', inStock: true },
+  { id: 'blueberry-bliss', name: 'Blueberry Bliss', description: 'Mango, banana, blueberries', price: 250, category: 'smoothies', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=300', inStock: true },
+
+  // BREAKFAST
+  { id: 'vanilla-pancake', name: 'Vanilla Pancake', description: 'Granola, banana, seasonal fruit', price: 250, category: 'breakfast', image: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=300', inStock: true },
+  { id: 'banana-waffle', name: 'Banana Waffle', description: 'Caramelised banana, granola', price: 260, category: 'breakfast', image: 'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=300', inStock: true },
+  { id: 'savory-waffle', name: 'Savory Waffle', description: "Fried chick'n, butter", price: 270, category: 'breakfast', image: 'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=300', inStock: true },
+  { id: 'chia-pudding', name: 'Chia Pudding', description: 'Granola, blueberries, banana', price: 260, category: 'breakfast', image: 'https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=300', inStock: true },
+
+  // PASTA & SANDWICHES
+  { id: 'garlic-butter-pasta', name: 'Garlic Butter Pasta', description: 'Herbs, mushrooms, bread', price: 280, category: 'pasta-sandwiches', image: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=300', inStock: true },
+  { id: 'ham-cheese-sandwich', name: 'Ham & Cheese', description: 'Sourdough, mozzarella', price: 270, category: 'pasta-sandwiches', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=300', inStock: true },
+  { id: 'philly-cheesesteak', name: 'Philly Cheesesteak', description: 'Beef, capsicum, mozzarella', price: 280, category: 'pasta-sandwiches', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=300', inStock: true },
+
+  // BURGERS & WRAPS
+  { id: 'beefless-burger', name: 'Beefless Burger', description: 'Plant patty, caramelised onion', price: 270, category: 'burgers-wraps', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300', inStock: true },
+  { id: 'crispy-chicken-burger', name: "Crispy Chick'n", description: 'Fried chicken, mustard, slaw', price: 270, category: 'burgers-wraps', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300', inStock: true },
+  { id: 'spicy-falafel-wrap', name: 'Falafel Wrap', description: 'Falafel, hummus, pickles', price: 270, category: 'burgers-wraps', image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=300', inStock: true },
+
+  // RICE BOWLS
+  { id: 'bibimbap', name: 'Bibimbap', description: 'Korean rice bowl, veggies, gochujang', price: 350, category: 'rice-bowls', image: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=300', inStock: true },
+  { id: 'teriyaki-bowl', name: 'Teriyaki Bowl', description: 'Glazed protein, pickled ginger', price: 340, category: 'rice-bowls', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300', inStock: true },
+  { id: 'crispy-tofu-bowl', name: 'Crispy Tofu Bowl', description: 'Crispy tofu, veggies, sauce', price: 320, category: 'rice-bowls', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300', inStock: true },
+
+  // FILO FAVES
+  { id: 'sisig', name: 'Sisig', description: 'Classic Filipino sisig', price: 250, category: 'filo-faves', image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=300', inStock: true },
+  { id: 'adobo-rice', name: 'Adobo Rice', description: 'Traditional adobo with rice', price: 230, category: 'filo-faves', image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=300', inStock: true },
+  { id: 'kare-kare', name: 'Kare-Kare', description: 'Peanut stew, bagoong', price: 280, category: 'filo-faves', image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=300', inStock: true },
 ];
 
+// POS categories with keyboard shortcuts
 const categories = [
-  { id: 'food', name: 'Food' },
-  { id: 'drinks', name: 'Drinks' },
-  { id: 'sides', name: 'Sides' },
-  { id: 'retail', name: 'Retail' },
-  { id: 'seasonal', name: 'Seasonal' },
+  { id: 'coffee-classic', name: 'Coffee', key: '1' },
+  { id: 'signature-coffee', name: 'Signature', key: '2' },
+  { id: 'non-coffee', name: 'Non-Coffee', key: '3' },
+  { id: 'matcha-hojicha', name: 'Matcha', key: '4' },
+  { id: 'smoothies', name: 'Smoothies', key: '5' },
+  { id: 'breakfast', name: 'Breakfast', key: '6' },
+  { id: 'pasta-sandwiches', name: 'Pasta', key: '7' },
+  { id: 'burgers-wraps', name: 'Burgers', key: '8' },
+  { id: 'rice-bowls', name: 'Rice Bowls', key: '9' },
+  { id: 'filo-faves', name: 'Filo Faves', key: '0' },
 ];
 
 export default function POSPage() {
-  const [activeCategory, setActiveCategory] = useState('food');
+  const [activeCategory, setActiveCategory] = useState('coffee-classic');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [selectedItemForNotes, setSelectedItemForNotes] = useState<string | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   const {
     orderNumber,
@@ -51,12 +115,57 @@ export default function POSPage() {
     setOrderType,
     addItem,
     updateQuantity,
+    updateNotes,
+    setDiscount,
     clearOrder,
     getSubtotal,
     getTax,
     getTotal,
-    checkout,
   } = usePOSStore();
+
+  // Keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    // Number keys for categories
+    if (e.key >= '1' && e.key <= '9') {
+      const cat = categories[parseInt(e.key) - 1];
+      if (cat) setActiveCategory(cat.id);
+    }
+    if (e.key === '0') {
+      const cat = categories[9];
+      if (cat) setActiveCategory(cat.id);
+    }
+
+    // Escape to clear
+    if (e.key === 'Escape') {
+      if (showDiscountModal || showNotesModal || showReceiptModal) return;
+      clearOrder();
+    }
+
+    // Enter to checkout
+    if (e.key === 'Enter' && items.length > 0) {
+      if (showDiscountModal || showNotesModal || showReceiptModal) return;
+      setShowReceiptModal(true);
+    }
+
+    // D for discount
+    if (e.key === 'd' || e.key === 'D') {
+      if (items.length > 0) setShowDiscountModal(true);
+    }
+
+    // ? for shortcuts
+    if (e.key === '?') {
+      setShowShortcuts(prev => !prev);
+    }
+  }, [items, clearOrder, showDiscountModal, showNotesModal, showReceiptModal]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const filteredProducts = products.filter((p) => {
     const matchesCategory = p.category === activeCategory;
@@ -70,6 +179,32 @@ export default function POSPage() {
     minute: '2-digit',
     hour12: true
   });
+
+  const handleApplyDiscount = (amount: number, type: 'percentage' | 'fixed') => {
+    const discountAmount = type === 'percentage'
+      ? (getSubtotal() * amount) / 100
+      : amount;
+    setDiscount(discountAmount);
+  };
+
+  const handleCheckout = () => {
+    setShowReceiptModal(true);
+  };
+
+  const getItemForNotes = () => {
+    return items.find(i => i.productId === selectedItemForNotes);
+  };
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    const container = document.getElementById('category-scroll');
+    if (container) {
+      const scrollAmount = 200;
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[var(--background-alt)]">
@@ -89,6 +224,13 @@ export default function POSPage() {
         </nav>
 
         <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={() => setShowShortcuts(true)}
+            className="w-10 h-10 rounded-lg text-gray-400 hover:bg-white/10 flex items-center justify-center"
+            title="Keyboard Shortcuts (?)"
+          >
+            <Keyboard className="w-5 h-5" />
+          </button>
           <button className="w-10 h-10 rounded-lg text-gray-400 hover:bg-white/10 flex items-center justify-center">
             <Settings className="w-5 h-5" />
           </button>
@@ -103,8 +245,8 @@ export default function POSPage() {
         {/* Header */}
         <header className="bg-white border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold">Menu</h1>
-            <p className="text-xs text-[var(--text-muted)]">Columns Coffee + Kitchen</p>
+            <h1 className="text-xl font-semibold">Columns Coffee + Kitchen</h1>
+            <p className="text-xs text-[var(--text-muted)]">🌱 Plant-Based All The Way!</p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -114,73 +256,117 @@ export default function POSPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Search items (e.g. "Latte") or scan barcode...'
+                placeholder='Search menu items...'
                 className="input pl-9 pr-4 w-80 text-sm"
               />
             </div>
-            <button className="p-2 hover:bg-[var(--background-alt)] rounded-lg">
-              <X className="w-5 h-5 text-[var(--text-muted)]" />
-            </button>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-2 hover:bg-[var(--background-alt)] rounded-lg"
+              >
+                <X className="w-5 h-5 text-[var(--text-muted)]" />
+              </button>
+            )}
           </div>
         </header>
 
-        {/* Category Tabs */}
+        {/* Category Tabs with Scroll */}
         <div className="bg-white border-b border-[var(--border)] px-6 py-3">
-          <div className="flex gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === cat.id
-                    ? 'bg-[var(--primary)] text-white'
-                    : 'bg-[var(--background-alt)] text-[var(--text-primary)] hover:bg-[var(--border)]'
-                  }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => scrollCategories('left')}
+              className="p-1 hover:bg-[var(--background-alt)] rounded"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div
+              id="category-scroll"
+              className="flex gap-2 overflow-x-auto scrollbar-hide flex-1"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {categories.map((cat) => (
+                <motion.button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${activeCategory === cat.id
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'bg-[var(--background-alt)] text-[var(--text-primary)] hover:bg-[var(--border)]'
+                    }`}
+                >
+                  {cat.name}
+                  <span className="ml-1 text-[10px] opacity-60">{cat.key}</span>
+                </motion.button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => scrollCategories('right')}
+              className="p-1 hover:bg-[var(--background-alt)] rounded"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
         {/* Products Grid */}
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map((product) => (
-              <button
-                key={product.id}
-                onClick={() => product.inStock && addItem({
-                  productId: product.id,
-                  name: product.name,
-                  price: product.price,
-                  image: product.image,
-                })}
-                disabled={!product.inStock}
-                className={`card p-3 text-left transition-all hover:shadow-md ${!product.inStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-              >
-                <div className="relative mb-3">
-                  <div
-                    className="w-full aspect-square rounded-xl bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url(${product.image})`,
-                      backgroundColor: '#F0EBE5'
-                    }}
-                  />
-                  <span className="absolute top-2 right-2 badge badge-primary">
-                    ${product.price.toFixed(2)}
-                  </span>
-                  {!product.inStock && (
-                    <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
-                      <span className="bg-white text-xs font-medium px-2 py-1 rounded">
-                        Out of Stock
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <h3 className="font-medium text-sm">{product.name}</h3>
-                <p className="text-xs text-[var(--text-muted)] truncate">{product.description}</p>
-              </button>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {filteredProducts.map((product, index) => (
+                <motion.button
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: index * 0.03 }}
+                  onClick={() => product.inStock && addItem({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                  })}
+                  disabled={!product.inStock}
+                  whileHover={{ scale: product.inStock ? 1.02 : 1 }}
+                  whileTap={{ scale: product.inStock ? 0.98 : 1 }}
+                  className={`card p-3 text-left transition-all ${!product.inStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'
+                    }`}
+                >
+                  <div className="relative mb-3">
+                    <div
+                      className="w-full aspect-square rounded-xl bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${product.image})`,
+                        backgroundColor: '#F0EBE5'
+                      }}
+                    />
+                    <span className="absolute top-2 right-2 badge badge-primary">
+                      ₱{product.price}
+                    </span>
+                    {!product.inStock && (
+                      <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
+                        <span className="bg-white text-xs font-medium px-2 py-1 rounded">
+                          Out of Stock
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-sm">{product.name}</h3>
+                  <p className="text-xs text-[var(--text-muted)] truncate">{product.description}</p>
+                </motion.button>
+              ))}
+            </AnimatePresence>
+
+            {filteredProducts.length === 0 && (
+              <div className="col-span-full text-center py-12 text-[var(--text-muted)]">
+                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No items in this category</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -194,7 +380,7 @@ export default function POSPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setOrderType('dine-in')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${orderType === 'dine-in'
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${orderType === 'dine-in'
                     ? 'bg-[var(--primary)] text-white'
                     : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
                   }`}
@@ -202,59 +388,92 @@ export default function POSPage() {
                 <MapPin className="w-3.5 h-3.5" />
                 Dine-in
               </button>
+              <button
+                onClick={() => setOrderType('takeout')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${orderType === 'takeout'
+                    ? 'bg-[var(--primary)] text-white'
+                    : 'bg-[var(--background-alt)] text-[var(--text-secondary)]'
+                  }`}
+              >
+                <Package className="w-3.5 h-3.5" />
+                Takeout
+              </button>
             </div>
           </div>
-          <p className="text-xs text-[var(--text-muted)]">Cassie M. • {currentTime}</p>
+          <p className="text-xs text-[var(--text-muted)]">Cashier • {currentTime}</p>
         </div>
 
         {/* Order Items */}
         <div className="flex-1 overflow-auto p-4">
           {items.length === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-[var(--text-muted)] text-sm">No items added yet</p>
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-[var(--background-alt)] rounded-full flex items-center justify-center mb-3">
+                <Package className="w-8 h-8 text-[var(--text-muted)]" />
+              </div>
+              <p className="text-[var(--text-muted)] text-sm mb-1">No items added yet</p>
+              <p className="text-[var(--text-muted)] text-xs">Click products to add them</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {items.map((item) => (
-                <div key={item.productId} className="flex gap-3">
-                  <div
-                    className="w-12 h-12 rounded-lg bg-cover bg-center flex-shrink-0"
-                    style={{
-                      backgroundImage: `url(${item.image})`,
-                      backgroundColor: '#F0EBE5'
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between">
-                      <h4 className="font-medium text-sm truncate">{item.name}</h4>
-                      <span className="font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</span>
+              <AnimatePresence>
+                {items.map((item) => (
+                  <motion.div
+                    key={item.productId}
+                    layout
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex gap-3"
+                  >
+                    <div
+                      className="w-12 h-12 rounded-lg bg-cover bg-center flex-shrink-0"
+                      style={{
+                        backgroundImage: `url(${item.image})`,
+                        backgroundColor: '#F0EBE5'
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between">
+                        <h4 className="font-medium text-sm truncate">{item.name}</h4>
+                        <span className="font-medium text-sm">₱{(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
+                      {item.addons && item.addons.length > 0 && (
+                        <p className="text-xs text-[var(--primary)]">
+                          + {item.addons.map(a => a.name).join(', ')}
+                        </p>
+                      )}
+                      {item.notes && (
+                        <p className="text-xs text-[var(--text-muted)]">📝 {item.notes}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--background-alt)]"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--background-alt)]"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedItemForNotes(item.productId);
+                            setShowNotesModal(true);
+                          }}
+                          className="ml-auto p-1 text-[var(--text-muted)] hover:text-[var(--primary)]"
+                          title="Add notes"
+                        >
+                          <StickyNote className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    {item.addons && item.addons.length > 0 && (
-                      <p className="text-xs text-[var(--primary)]">
-                        + {item.addons.map(a => `${a.name} ($${a.price.toFixed(2)})`).join(', ')}
-                      </p>
-                    )}
-                    {item.notes && (
-                      <p className="text-xs text-[var(--text-muted)]">{item.notes}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1">
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                        className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--background-alt)]"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                        className="w-6 h-6 rounded border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--background-alt)]"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -262,56 +481,177 @@ export default function POSPage() {
         {/* Action Buttons */}
         <div className="p-4 border-t border-[var(--border)]">
           <div className="flex gap-2 mb-4">
-            <button className="flex-1 btn btn-outline text-xs py-2.5">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => items.length > 0 && setShowNotesModal(true)}
+              disabled={items.length === 0}
+              className="flex-1 btn btn-outline text-xs py-2.5 disabled:opacity-50"
+            >
               <StickyNote className="w-4 h-4" />
-              Add Note
-            </button>
-            <button className="flex-1 btn btn-outline text-xs py-2.5">
+              Note
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowDiscountModal(true)}
+              disabled={items.length === 0}
+              className="flex-1 btn btn-outline text-xs py-2.5 disabled:opacity-50"
+            >
               <Percent className="w-4 h-4" />
               Discount
-            </button>
-            <button
+              {discount > 0 && <span className="ml-1 text-[var(--primary)]">✓</span>}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={clearOrder}
-              className="flex-1 btn btn-outline text-xs py-2.5"
+              disabled={items.length === 0}
+              className="flex-1 btn btn-outline text-xs py-2.5 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
               Clear
-            </button>
+            </motion.button>
           </div>
 
           {/* Totals */}
           <div className="space-y-2 text-sm mb-4">
             <div className="flex justify-between text-[var(--text-muted)]">
               <span>Subtotal</span>
-              <span>${getSubtotal().toFixed(2)}</span>
+              <span>₱{getSubtotal().toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-[var(--text-muted)]">
-              <span>Tax (8%)</span>
-              <span>${getTax().toFixed(2)}</span>
+              <span>VAT (12%)</span>
+              <span>₱{getTax().toLocaleString()}</span>
             </div>
             {discount > 0 && (
-              <div className="flex justify-between text-[var(--primary)]">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-between text-[var(--primary)]"
+              >
                 <span>Discount</span>
-                <span>-${discount.toFixed(2)}</span>
-              </div>
+                <span>-₱{discount.toLocaleString()}</span>
+              </motion.div>
             )}
           </div>
 
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-semibold">Total</span>
-            <span className="text-2xl font-bold">${getTotal().toFixed(2)}</span>
+            <motion.span
+              key={getTotal()}
+              initial={{ scale: 1.1 }}
+              animate={{ scale: 1 }}
+              className="text-2xl font-bold"
+            >
+              ₱{getTotal().toLocaleString()}
+            </motion.span>
           </div>
 
-          <button
-            onClick={checkout}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCheckout}
             disabled={items.length === 0}
             className="w-full btn btn-primary py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Checkout
             <ChevronRight className="w-5 h-5" />
-          </button>
+            <span className="ml-2 text-xs opacity-60">↵</span>
+          </motion.button>
         </div>
       </aside>
+
+      {/* Modals */}
+      <DiscountModal
+        isOpen={showDiscountModal}
+        onClose={() => setShowDiscountModal(false)}
+        onApply={handleApplyDiscount}
+        subtotal={getSubtotal()}
+      />
+
+      <NotesModal
+        isOpen={showNotesModal}
+        onClose={() => {
+          setShowNotesModal(false);
+          setSelectedItemForNotes(null);
+        }}
+        onSave={(notes) => {
+          if (selectedItemForNotes) {
+            updateNotes(selectedItemForNotes, notes);
+          }
+        }}
+        itemName={getItemForNotes()?.name || 'Order'}
+        initialNotes={getItemForNotes()?.notes || ''}
+      />
+
+      <ReceiptModal
+        isOpen={showReceiptModal}
+        onClose={() => {
+          setShowReceiptModal(false);
+          clearOrder();
+        }}
+        order={{
+          orderNumber,
+          items: items.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, notes: i.notes })),
+          subtotal: getSubtotal(),
+          tax: getTax(),
+          discount,
+          total: getTotal(),
+          type: orderType,
+          cashierName: 'Cashier',
+        }}
+      />
+
+      {/* Keyboard Shortcuts Modal */}
+      <AnimatePresence>
+        {showShortcuts && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowShortcuts(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 z-50 w-80"
+            >
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Keyboard className="w-5 h-5" />
+                Keyboard Shortcuts
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Categories</span>
+                  <kbd className="px-2 py-1 bg-[var(--background-alt)] rounded text-xs">1-0</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Checkout</span>
+                  <kbd className="px-2 py-1 bg-[var(--background-alt)] rounded text-xs">Enter</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Clear Order</span>
+                  <kbd className="px-2 py-1 bg-[var(--background-alt)] rounded text-xs">Esc</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Discount</span>
+                  <kbd className="px-2 py-1 bg-[var(--background-alt)] rounded text-xs">D</kbd>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowShortcuts(false)}
+                className="w-full btn btn-primary mt-4"
+              >
+                Got it!
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

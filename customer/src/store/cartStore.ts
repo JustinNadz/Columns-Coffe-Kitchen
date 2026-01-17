@@ -22,7 +22,7 @@ interface CartState {
     getTotal: () => number;
 }
 
-const TAX_RATE = 0.08; // 8% tax
+const TAX_RATE = 0.12; // 12% VAT (Philippines)
 
 export const useCartStore = create<CartState>()(
     persist(

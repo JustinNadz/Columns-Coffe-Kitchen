@@ -1,13 +1,38 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Check } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import Confetti, { SuccessCheckmark } from '@/components/ui/Confetti';
 
 export default function CartPage() {
+    const router = useRouter();
     const { items, updateQuantity, removeItem, clearCart, getSubtotal, getTax, getTotal } = useCartStore();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
 
-    if (items.length === 0) {
+    const handleCheckout = async () => {
+        setIsCheckingOut(true);
+
+        // Simulate payment processing
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Show success animation
+        setShowSuccess(true);
+        setShowConfetti(true);
+
+        // Clear cart after celebration
+        setTimeout(() => {
+            clearCart();
+            router.push('/orders');
+        }, 3000);
+    };
+
+    if (items.length === 0 && !showSuccess) {
         return (
             <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
                 <div className="text-center">
@@ -26,6 +51,37 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen bg-[var(--background)]">
+            {/* Confetti Animation */}
+            <Confetti isActive={showConfetti} duration={4000} />
+
+            {/* Success Modal */}
+            <AnimatePresence>
+                {showSuccess && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-sm mx-4 text-center shadow-2xl"
+                        >
+                            <SuccessCheckmark />
+                            <h2 className="text-2xl font-bold mt-6 mb-2">Order Placed! 🎉</h2>
+                            <p className="text-[var(--text-muted)] mb-4">
+                                Thank you for your order! We're preparing it now.
+                            </p>
+                            <p className="text-sm text-[var(--primary)] font-medium">
+                                Redirecting to order tracking...
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="max-w-4xl mx-auto p-4 py-8">
                 <div className="flex items-center gap-4 mb-8">
                     <Link href="/menu" className="p-2 hover:bg-[var(--background-alt)] rounded-full">
@@ -39,7 +95,14 @@ export default function CartPage() {
                     {/* Cart Items */}
                     <div className="md:col-span-2 space-y-4">
                         {items.map((item) => (
-                            <div key={item.productId} className="card p-4 flex gap-4">
+                            <motion.div
+                                key={item.productId}
+                                layout
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="card p-4 flex gap-4"
+                            >
                                 <div
                                     className="w-20 h-20 rounded-xl bg-cover bg-center flex-shrink-0"
                                     style={{
@@ -50,7 +113,7 @@ export default function CartPage() {
                                 <div className="flex-1">
                                     <div className="flex justify-between">
                                         <h3 className="font-semibold">{item.name}</h3>
-                                        <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                                        <span className="font-semibold">₱{(item.price * item.quantity).toLocaleString()}</span>
                                     </div>
                                     {item.notes && (
                                         <p className="text-xs text-[var(--text-muted)] mt-1">{item.notes}</p>
@@ -84,7 +147,7 @@ export default function CartPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
 
                         <button
@@ -103,26 +166,43 @@ export default function CartPage() {
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-[var(--text-muted)]">Subtotal</span>
-                                    <span>${getSubtotal().toFixed(2)}</span>
+                                    <span>₱{getSubtotal().toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-[var(--text-muted)]">Tax (8%)</span>
-                                    <span>${getTax().toFixed(2)}</span>
+                                    <span className="text-[var(--text-muted)]">VAT (12%)</span>
+                                    <span>₱{getTax().toLocaleString()}</span>
                                 </div>
                                 <div className="border-t border-[var(--border)] pt-3">
                                     <div className="flex justify-between font-semibold text-lg">
                                         <span>Total</span>
-                                        <span>${getTotal().toFixed(2)}</span>
+                                        <span>₱{getTotal().toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <button className="w-full btn btn-primary mt-6">
-                                Checkout
-                            </button>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleCheckout}
+                                disabled={isCheckingOut}
+                                className="w-full btn btn-primary mt-6 disabled:opacity-70"
+                            >
+                                {isCheckingOut ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                                        />
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    'Place Order'
+                                )}
+                            </motion.button>
 
                             <p className="text-xs text-center text-[var(--text-muted)] mt-4">
-                                Taxes calculated at checkout
+                                🌱 100% Plant-Based Order
                             </p>
                         </div>
                     </div>

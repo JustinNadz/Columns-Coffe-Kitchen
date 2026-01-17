@@ -6,7 +6,7 @@ export interface Product {
     image: string;
     category: string;
     inStock: boolean;
-    stockQuantity: number;
+    stockQuantity?: number; // Optional for menu items
     addons?: Addon[];
 }
 
@@ -20,6 +20,8 @@ export interface Category {
     id: string;
     name: string;
     image: string;
-    itemCount: number;
-    slug: string;
+    description?: string;
+    itemCount?: number;
+    slug?: string;
 }
+
