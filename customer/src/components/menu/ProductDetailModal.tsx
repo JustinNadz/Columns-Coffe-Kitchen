@@ -2,100 +2,52 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, Check } from 'lucide-react';
+import { X, Minus, Plus, Heart, ShoppingBag, Leaf } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 
-interface Addon {
+interface Product {
     id: string;
     name: string;
+    description: string;
     price: number;
+    image: string;
+    category: string;
+    inStock: boolean;
 }
 
 interface ProductDetailModalProps {
+    product: Product | null;
     isOpen: boolean;
     onClose: () => void;
-    product: {
-        id: string;
-        name: string;
-        description: string;
-        price: number;
-        image: string;
-        category: string;
-        inStock: boolean;
-        addons?: Addon[];
-    } | null;
     onAddToCart?: () => void;
 }
 
-const sizes = [
-    { id: 'small', name: 'Small', priceModifier: -0.5 },
-    { id: 'regular', name: 'Regular', priceModifier: 0 },
-    { id: 'large', name: 'Large', priceModifier: 1.0 },
-];
-
-const defaultAddons: Addon[] = [
-    { id: 'extra-shot', name: 'Extra Shot', price: 0.75 },
-    { id: 'oat-milk', name: 'Oat Milk', price: 0.50 },
-    { id: 'vanilla', name: 'Vanilla Syrup', price: 0.50 },
-    { id: 'caramel', name: 'Caramel Drizzle', price: 0.50 },
-];
-
-export default function ProductDetailModal({
-    isOpen,
-    onClose,
-    product,
-    onAddToCart
-}: ProductDetailModalProps) {
-    const [selectedSize, setSelectedSize] = useState('regular');
-    const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+export default function ProductDetailModal({ product, isOpen, onClose, onAddToCart }: ProductDetailModalProps) {
     const [quantity, setQuantity] = useState(1);
     const [notes, setNotes] = useState('');
-
     const { addItem } = useCartStore();
+    const { isFavorite, toggleFavorite } = useFavoritesStore();
 
     if (!product) return null;
 
-    const sizeModifier = sizes.find(s => s.id === selectedSize)?.priceModifier || 0;
-    const addonsTotal = selectedAddons.reduce((acc, addonId) => {
-        const addon = defaultAddons.find(a => a.id === addonId);
-        return acc + (addon?.price || 0);
-    }, 0);
-    const unitPrice = product.price + sizeModifier + addonsTotal;
-    const totalPrice = unitPrice * quantity;
-
-    const toggleAddon = (addonId: string) => {
-        setSelectedAddons(prev =>
-            prev.includes(addonId)
-                ? prev.filter(id => id !== addonId)
-                : [...prev, addonId]
-        );
-    };
-
     const handleAddToCart = () => {
-        const selectedAddonObjects = defaultAddons
-            .filter(a => selectedAddons.includes(a.id))
-            .map(a => ({ name: a.name, price: a.price }));
-
         for (let i = 0; i < quantity; i++) {
             addItem({
-                productId: `${product.id}-${Date.now()}-${i}`,
-                name: `${product.name}${selectedSize !== 'regular' ? ` (${selectedSize})` : ''}`,
-                price: unitPrice,
+                productId: product.id,
+                name: product.name,
+                price: product.price,
                 image: product.image,
                 notes: notes || undefined,
-                addons: selectedAddonObjects.length > 0 ? selectedAddonObjects : undefined,
             });
         }
-
-        onAddToCart?.();
-        onClose();
-
-        // Reset state
-        setSelectedSize('regular');
-        setSelectedAddons([]);
         setQuantity(1);
         setNotes('');
+        onClose();
+        onAddToCart?.();
     };
+
+    const isFav = isFavorite(product.id);
 
     return (
         <AnimatePresence>
@@ -107,132 +59,113 @@ export default function ProductDetailModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
                     />
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 50 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-50 p-4 max-h-[90vh] overflow-auto"
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50 p-4"
                     >
-                        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-                            {/* Product Image */}
-                            <div className="relative h-56 bg-[var(--background-alt)]">
-                                <div
-                                    className="w-full h-full bg-cover bg-center"
-                                    style={{
-                                        backgroundImage: `url(${product.image})`,
-                                        backgroundColor: '#F0EBE5'
-                                    }}
+                        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+                            {/* Image */}
+                            <div className="relative h-56">
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+
+                                {/* Close Button */}
                                 <button
                                     onClick={onClose}
-                                    className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors shadow-lg"
+                                    className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
-                                <div className="absolute bottom-4 left-4">
-                                    <span className="bg-[var(--primary)] text-white text-sm font-medium px-3 py-1.5 rounded-full">
-                                        ${product.price.toFixed(2)}
-                                    </span>
+
+                                {/* Favorite Button */}
+                                <button
+                                    onClick={() => toggleFavorite(product.id)}
+                                    className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isFav
+                                            ? 'bg-red-500 text-white'
+                                            : 'bg-white/90 backdrop-blur text-gray-600 hover:bg-white'
+                                        }`}
+                                >
+                                    <Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
+                                </button>
+
+                                {/* Plant-based badge */}
+                                <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-green-500 text-white text-xs px-3 py-1.5 rounded-full">
+                                    <Leaf className="w-3 h-3" />
+                                    Plant-Based
                                 </div>
                             </div>
 
+                            {/* Content */}
                             <div className="p-6">
-                                {/* Product Info */}
-                                <h2 className="text-xl font-bold mb-1">{product.name}</h2>
-                                <p className="text-[var(--text-muted)] text-sm mb-6">{product.description}</p>
-
-                                {/* Size Selection */}
-                                <div className="mb-6">
-                                    <h3 className="text-sm font-semibold mb-3">Size</h3>
-                                    <div className="flex gap-2">
-                                        {sizes.map((size) => (
-                                            <button
-                                                key={size.id}
-                                                onClick={() => setSelectedSize(size.id)}
-                                                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${selectedSize === size.id
-                                                        ? 'bg-[var(--primary)] text-white'
-                                                        : 'bg-[var(--background-alt)] text-[var(--text-primary)] hover:bg-[var(--border)]'
-                                                    }`}
-                                            >
-                                                {size.name}
-                                                {size.priceModifier !== 0 && (
-                                                    <span className="block text-xs opacity-80">
-                                                        {size.priceModifier > 0 ? '+' : ''}${size.priceModifier.toFixed(2)}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h2 className="text-2xl font-bold">{product.name}</h2>
+                                    <span className="text-2xl font-bold text-[var(--primary)]">
+                                        ₱{product.price}
+                                    </span>
                                 </div>
 
-                                {/* Add-ons */}
-                                <div className="mb-6">
-                                    <h3 className="text-sm font-semibold mb-3">Add-ons</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {defaultAddons.map((addon) => (
-                                            <button
-                                                key={addon.id}
-                                                onClick={() => toggleAddon(addon.id)}
-                                                className={`flex items-center justify-between p-3 rounded-xl text-sm transition-all ${selectedAddons.includes(addon.id)
-                                                        ? 'bg-[var(--primary)] text-white'
-                                                        : 'bg-[var(--background-alt)] text-[var(--text-primary)] hover:bg-[var(--border)]'
-                                                    }`}
-                                            >
-                                                <span>{addon.name}</span>
-                                                <span className="flex items-center gap-1">
-                                                    +${addon.price.toFixed(2)}
-                                                    {selectedAddons.includes(addon.id) && (
-                                                        <Check className="w-4 h-4" />
-                                                    )}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <p className="text-[var(--text-muted)] mb-4">{product.description}</p>
 
-                                {/* Special Instructions */}
-                                <div className="mb-6">
-                                    <h3 className="text-sm font-semibold mb-3">Special Instructions</h3>
+                                {/* Notes */}
+                                <div className="mb-4">
+                                    <label className="text-sm text-[var(--text-muted)] mb-2 block">
+                                        Special Instructions (optional)
+                                    </label>
                                     <textarea
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="E.g., No ice, extra hot, etc."
-                                        className="w-full p-3 rounded-xl border border-[var(--border)] text-sm resize-none h-20 focus:outline-none focus:border-[var(--primary)]"
+                                        placeholder="e.g., No ice, extra hot, less sugar..."
+                                        className="input resize-none h-20 text-sm"
                                     />
                                 </div>
 
-                                {/* Quantity & Add to Cart */}
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-3 bg-[var(--background-alt)] rounded-xl p-1">
+                                {/* Quantity */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <span className="font-medium">Quantity</span>
+                                    <div className="flex items-center gap-4">
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white transition-colors"
+                                            className="w-10 h-10 rounded-full border-2 border-[var(--border)] flex items-center justify-center hover:border-[var(--primary)] transition-colors"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
-                                        <span className="w-8 text-center font-semibold">{quantity}</span>
+                                        <span className="text-xl font-bold w-8 text-center">{quantity}</span>
                                         <button
                                             onClick={() => setQuantity(quantity + 1)}
-                                            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white transition-colors"
+                                            className="w-10 h-10 rounded-full border-2 border-[var(--border)] flex items-center justify-center hover:border-[var(--primary)] transition-colors"
                                         >
                                             <Plus className="w-4 h-4" />
                                         </button>
                                     </div>
-
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleAddToCart}
-                                        className="flex-1 btn btn-primary py-3"
-                                    >
-                                        Add to Cart • ${totalPrice.toFixed(2)}
-                                    </motion.button>
                                 </div>
+
+                                {/* Add to Cart Button */}
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleAddToCart}
+                                    disabled={!product.inStock}
+                                    className="w-full btn btn-primary py-4 text-lg disabled:opacity-50"
+                                >
+                                    <ShoppingBag className="w-5 h-5" />
+                                    Add to Cart • ₱{(product.price * quantity).toLocaleString()}
+                                </motion.button>
+
+                                {!product.inStock && (
+                                    <p className="text-center text-red-500 text-sm mt-2">
+                                        This item is currently out of stock
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </motion.div>

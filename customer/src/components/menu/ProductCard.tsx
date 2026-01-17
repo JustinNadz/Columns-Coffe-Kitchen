@@ -75,7 +75,7 @@ export default function ProductCard({ id, name, description, price, image, categ
 
                     {/* Price Badge */}
                     <span className="absolute top-3 right-3 bg-[var(--primary)] text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg">
-                        ${price.toFixed(2)}
+                        ₱{price}
                     </span>
 
                     {/* Out of Stock Overlay */}
@@ -96,8 +96,8 @@ export default function ProductCard({ id, name, description, price, image, categ
                             animate={{ opacity: 1, scale: 1 }}
                             onClick={handleQuickAdd}
                             className={`absolute bottom-3 right-3 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors ${justAdded
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white'
                                 }`}
                         >
                             {justAdded ? (

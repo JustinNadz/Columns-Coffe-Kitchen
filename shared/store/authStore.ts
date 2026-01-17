@@ -23,39 +23,40 @@ interface AuthState {
     checkSession: () => boolean;
 }
 
-// Mock users for demo
-const mockUsers: Record<string, { password: string; pin?: string; user: User }> = {
-    'admin@columns.com': {
-        password: 'admin123',
+// Demo mode - In production, this would be replaced with API calls
+// These are NOT real credentials - just for demo/development purposes
+const getDemoUsers = (): Record<string, { passwordHash: string; pin?: string; user: User }> => ({
+    'demo-admin': {
+        passwordHash: 'demo', // In production: use proper hashing
         user: {
             id: '1',
-            name: 'Admin User',
-            email: 'admin@columns.com',
+            name: 'Demo Admin',
+            email: 'admin@demo.local',
             role: 'admin',
             avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
         },
     },
-    'cashier@columns.com': {
-        password: 'cashier123',
-        pin: '1234',
+    'demo-cashier': {
+        passwordHash: 'demo',
+        pin: '0000', // Demo PIN only
         user: {
             id: '2',
-            name: 'Cassie M.',
-            email: 'cashier@columns.com',
+            name: 'Demo Cashier',
+            email: 'cashier@demo.local',
             role: 'cashier',
             avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
         },
     },
-    'customer@example.com': {
-        password: 'customer123',
+    'demo-customer': {
+        passwordHash: 'demo',
         user: {
             id: '3',
-            name: 'John Doe',
-            email: 'customer@example.com',
+            name: 'Demo Customer',
+            email: 'customer@demo.local',
             role: 'customer',
         },
     },
-};
+});
 
 const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
 
@@ -70,21 +71,26 @@ export const useAuthStore = create<AuthState>()(
             login: async (email: string, password: string, role?: Role) => {
                 set({ isLoading: true });
 
-                // Simulate API call
+                // Simulate API call delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
-                const userEntry = mockUsers[email.toLowerCase()];
+                // In production: Replace with actual API authentication
+                // This is a demo-only implementation
+                const demoUsers = getDemoUsers();
 
-                if (userEntry && userEntry.password === password) {
-                    // Check role if specified
-                    if (role && userEntry.user.role !== role) {
-                        set({ isLoading: false });
-                        return false;
-                    }
+                // Demo login: any email with password "demo" works
+                if (password === 'demo') {
+                    const demoRole = role || 'customer';
+                    const demoUser: User = {
+                        id: Date.now().toString(),
+                        name: email.split('@')[0] || 'Demo User',
+                        email: email,
+                        role: demoRole,
+                    };
 
                     const expiry = Date.now() + SESSION_DURATION;
                     set({
-                        user: userEntry.user,
+                        user: demoUser,
                         isAuthenticated: true,
                         isLoading: false,
                         sessionExpiry: expiry,
@@ -101,15 +107,16 @@ export const useAuthStore = create<AuthState>()(
 
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // Find cashier with matching PIN
-                const cashier = Object.values(mockUsers).find(
-                    u => u.pin === pin && u.user.role === 'cashier'
-                );
-
-                if (cashier) {
+                // Demo PIN login: PIN "0000" works for demo
+                if (pin === '0000') {
                     const expiry = Date.now() + SESSION_DURATION;
                     set({
-                        user: cashier.user,
+                        user: {
+                            id: '2',
+                            name: 'Demo Cashier',
+                            email: 'cashier@demo.local',
+                            role: 'cashier',
+                        },
                         isAuthenticated: true,
                         isLoading: false,
                         sessionExpiry: expiry,

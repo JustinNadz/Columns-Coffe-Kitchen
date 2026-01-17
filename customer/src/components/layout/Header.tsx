@@ -16,8 +16,8 @@ export default function Header() {
 
     const navLinks = [
         { href: '/menu', label: 'Menu' },
+        { href: '/favorites', label: '❤️ Favorites' },
         { href: '/orders', label: 'Orders' },
-        { href: '/orders/tracking', label: 'Track Order' },
     ];
 
     const toggleTheme = () => {
